@@ -1,0 +1,1 @@
+const String THEME_TYPE = 'theme_type';
