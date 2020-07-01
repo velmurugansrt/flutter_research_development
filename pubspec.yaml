@@ -46,8 +46,17 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter.
-flutter:
+flutter:  
+  assets:            
+      - lib/src/assets/images/       
 
+  fonts:
+    - family: NotoSansJP
+      fonts:
+        - asset: lib/src/assets/fonts/NotoSansJP-Regular.otf
+          weight: 400
+        - asset: lib/src/assets/fonts/NotoSansJP-Bold.otf
+          weight: 600
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

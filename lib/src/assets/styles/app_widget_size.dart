@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppWidgetSize {
 // FONT SIZE CONFIG
 
-  static const double headline6Size = 16;
+  static const double headline6Size = 24;
   static const double captionSize = 14;
   static const double headline5Size = 16;
   static const double subtitle1Size = 14;
@@ -16,7 +16,7 @@ class AppWidgetSize {
 
   static const double inputSize = 16;
   static const double inputLabelSize = 14;
-  static const double buttonTextSize = 14;
+  static const double buttonTextSize = 16;
 
   static const double bigTextSize = 18;
   static const double textSize = 16;

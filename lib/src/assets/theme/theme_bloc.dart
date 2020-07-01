@@ -20,7 +20,7 @@ abstract class ThemeState {
 }
 
 class ThemeInitState extends ThemeState {
-  ThemeInitState() : super(AppTheme.DARK_MODE);
+  ThemeInitState() : super(AppTheme.LIGHT_MODE);
 }
 
 class ThemeUpdateState extends ThemeState {

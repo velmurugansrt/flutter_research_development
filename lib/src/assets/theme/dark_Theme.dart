@@ -28,5 +28,6 @@ ThemeData darkTheme() {
     accentColor: APP_ACCENT_COLOR,
     backgroundColor: APP_BACKGROUND_COLOR,
     scaffoldBackgroundColor: APP_BACKGROUND_COLOR,
+    fontFamily: 'PTSansNarrow',
   );
 }
