@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_research_development/src/assets/styles/app_widget_size.dart';
 import 'package:flutter_research_development/src/assets/theme/app_colors.dart';
 import 'package:flutter_research_development/src/blocs/home/home_bloc.dart';
+import 'package:flutter_research_development/src/constants/app_constants.dart';
 import 'package:flutter_research_development/src/data/store/app_store.dart';
+import 'package:flutter_research_development/src/models/home/cart_list_model.dart';
 import 'package:flutter_research_development/src/models/home/product_list_response_model.dart';
 import 'package:flutter_research_development/src/ui/navigation/screen_routes.dart';
 import 'package:upi_pay/upi_pay.dart';
@@ -35,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   AppBar _buildAppBar() {
-    String username = AppStore().getUserDetails().username;
+    final String username = AppStore().getUserDetails().username;
     return AppBar(
       automaticallyImplyLeading: false,
       title: Text(username),
@@ -68,47 +70,57 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  FloatingActionButton _buildFloatingActionButton() {
-    return FloatingActionButton(
-      onPressed: _carButtonPressed,
-      child: Container(
-        alignment: Alignment.topRight,
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Stack(
-          overflow: Overflow.visible,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.shopping_cart,
-                color: Theme.of(context).primaryColor,
+  BlocBuilder<HomeBloc, HomeState> _buildFloatingActionButton() {
+    return BlocBuilder<HomeBloc, HomeState>(
+      condition: (HomeState prevState, HomeState currentState) {
+        return currentState is CartDetailsState;
+      },
+      builder: (BuildContext context, HomeState state) {
+        if (state is CartDetailsState && state.cartList.isNotEmpty) {
+          return FloatingActionButton(
+            onPressed: _carButtonPressed,
+            child: Container(
+              alignment: Alignment.topRight,
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: BorderRadius.circular(20),
               ),
-              onPressed: null,
+              child: Stack(
+                overflow: Overflow.visible,
+                children: <Widget>[
+                  IconButton(
+                    icon: Icon(
+                      Icons.shopping_cart,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: null,
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Text(
+                        state.cartList.length.toString(),
+                        style: Theme.of(context).accentTextTheme.bodyText1,
+                      ),
+                    ),
+                  )
+                ],
+              ),
             ),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: Container(
-                width: 20,
-                height: 20,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(40),
-                ),
-                child: Text(
-                  '4',
-                  style: Theme.of(context).accentTextTheme.bodyText1,
-                ),
-              ),
-            )
-          ],
-        ),
-      ),
+          );
+        }
+        return Container();
+      },
     );
   }
 
@@ -116,64 +128,89 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext bct) {
-        return _buildCartSection();
+        return BlocProvider.value(
+          value: _homeBloc,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(30, 30, 30, 20),
+            child: _buildCartSection(),
+          ),
+        );
       },
     );
   }
 
-  Widget _buildCartSection() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(30, 30, 30, 20),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Wrap(
-                  direction: Axis.vertical,
-                  children: <Widget>[
-                    Text(
-                      'Product 1',
+  BlocBuilder<HomeBloc, HomeState> _buildCartSection() {
+    return BlocBuilder<HomeBloc, HomeState>(
+      condition: (HomeState prevState, HomeState currentState) {
+        return currentState is CartDetailsState;
+      },
+      builder: (BuildContext context, HomeState state) {
+        if (state is CartDetailsState && state.cartList.isNotEmpty) {
+          List<Widget> coloumnItem = List.generate(
+            state.cartList.length,
+            (index) {
+              CartList cartItem = state.cartList[index];
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                    flex: 2,
+                    child: Wrap(
+                      direction: Axis.vertical,
+                      children: <Widget>[
+                        Text(
+                          cartItem.name,
+                          style: Theme.of(context).textTheme.headline3,
+                        ),
+                        Text(
+                          '₹ ${cartItem.price}',
+                          style: Theme.of(context).textTheme.headline3,
+                        )
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Wrap(
+                      direction: Axis.horizontal,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      alignment: WrapAlignment.center,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(
+                            Icons.remove,
+                            color: AppColors.negativeColor,
+                          ),
+                          onPressed: () => _productActionPressed(
+                              AppConstants.MINUS, cartItem),
+                        ),
+                        Text(
+                          '${cartItem.count}',
+                          style: Theme.of(context).textTheme.headline3,
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.add,
+                            color: AppColors.postiveColor,
+                          ),
+                          onPressed: () => _productActionPressed(
+                              AppConstants.PLUS, cartItem),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '₹ ${cartItem.totalPrice}',
                       style: Theme.of(context).textTheme.headline3,
+                      textAlign: TextAlign.end,
                     ),
-                    Text(
-                      '@30',
-                      style: Theme.of(context).textTheme.headline3,
-                    )
-                  ],
-                ),
-                Wrap(
-                  direction: Axis.horizontal,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: <Widget>[
-                    IconButton(
-                      icon: Icon(
-                        Icons.remove,
-                        color: AppColors.negativeColor,
-                      ),
-                      onPressed: _updateProductCart,
-                    ),
-                    Text(
-                      '1',
-                      style: Theme.of(context).textTheme.headline3,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.add,
-                        color: AppColors.postiveColor,
-                      ),
-                      onPressed: _updateProductCart,
-                    ),
-                  ],
-                ),
-                Text(
-                  '@300',
-                  style: Theme.of(context).textTheme.headline3,
-                ),
-              ],
-            ),
+                  ),
+                ],
+              );
+            },
+          );
+          coloumnItem.add(
             Wrap(
               children: <Widget>[
                 RaisedButton(
@@ -182,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: AppWidgetSize.buttonBorderRadius,
                   ),
-                  onPressed: _checkoutButtonPressed,
+                  onPressed: () => _checkoutButtonPressed(state.total),
                   child: Wrap(
                     direction: Axis.horizontal,
                     children: <Widget>[
@@ -191,38 +228,45 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: Theme.of(context).accentTextTheme.headline4,
                       ),
                       Text(
-                        '@300',
+                        '₹ ${state.total}',
                         style: Theme.of(context).accentTextTheme.headline4,
                       ),
                     ],
                   ),
                 ),
               ],
-            )
-          ],
-        ),
-      ),
+            ),
+          );
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: coloumnItem,
+            ),
+          );
+        }
+        return Text(
+          'No data available',
+          style: Theme.of(context).textTheme.headline2,
+          textAlign: TextAlign.center,
+        );
+      },
     );
   }
 
-  Future<void> _checkoutButtonPressed() async {
-    debugPrint('txnResponse');
+  Future<void> _checkoutButtonPressed(String total) async {
+    final String username = AppStore().getUserDetails().username;
 
     UpiTransactionResponse txnResponse = await UpiPay.initiateTransaction(
-      amount: '10.00',
-      app: UpiApplication.googlePay,
-      receiverName: 'John',
-      receiverUpiAddress: 'johnupi@paytm',
+      amount: '1',
+      app: UpiApplication.phonePe,
+      receiverName: 'Velmurugan',
+      receiverUpiAddress: 'rvelmurugan1996-1@okaxis',
       transactionRef: 'ORD1215236',
-      url: 'www.johnshop.com/order/ORD1215236',
       merchantCode: '1032',
-      transactionNote: 'Test transaction',
     );
     Navigator.of(context)
         .pushReplacementNamed(ScreenRoutes.ORDER_STATUS_SCREEN);
   }
-
-  void _updateProductCart() {}
 
   BlocBuilder<HomeBloc, HomeState> _buildBestProductList() {
     return BlocBuilder<HomeBloc, HomeState>(
@@ -297,7 +341,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       Icons.shopping_cart,
                       color: Theme.of(context).primaryColor,
                     ),
-                    onPressed: null,
+                    onPressed: () =>
+                        _productActionPressed(AppConstants.PLUS, productItem),
                   ),
                 )
               ],
@@ -321,6 +366,10 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _productActionPressed(String actionType, dynamic productItem) {
+    _homeBloc.add(ProductActionEvent(actionType, productItem));
   }
 
   BlocBuilder<HomeBloc, HomeState> _buildPopularProductList() {
