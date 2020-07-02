@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_research_development/src/assets/styles/app_images.dart';
 import 'package:flutter_research_development/src/assets/styles/app_widget_size.dart';
+import 'package:flutter_research_development/src/blocs/login/login_bloc.dart';
 import 'package:flutter_research_development/src/ui/navigation/screen_routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -13,6 +15,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  LoginBloc _loginBloc;
+  @override
+  void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loginBloc = BlocProvider.of<LoginBloc>(context);
+    });
+
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -134,7 +145,10 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (password == '') {
       showAlert('Please enter valid password');
     } else {
-      Navigator.of(context).pushReplacementNamed(ScreenRoutes.HOME_SCREEN);
+
+      _loginBloc.add(FetchUserLoginEvent());
+
+      // Navigator.of(context).pushReplacementNamed(ScreenRoutes.HOME_SCREEN);
     }
   }
 

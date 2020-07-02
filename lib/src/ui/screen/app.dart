@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_research_development/src/assets/theme/app_themes.dart';
 import 'package:flutter_research_development/src/assets/theme/theme_bloc.dart';
+import 'package:flutter_research_development/src/blocs/login/login_bloc.dart';
 import 'package:flutter_research_development/src/ui/navigation/screen_routes.dart';
 import 'package:flutter_research_development/src/ui/screen/home/home_screen.dart';
 import 'package:flutter_research_development/src/ui/screen/init/int_screen.dart';
@@ -56,7 +57,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute<dynamic>(
         settings: const RouteSettings(name: ScreenRoutes.LOGIN_SCREEN),
         builder: (BuildContext context) {
-          return LoginScreen();
+          return BlocProvider<LoginBloc>(
+            create: (BuildContext context) => LoginBloc(),
+            child: LoginScreen(),
+          );
         },
       );
       break;

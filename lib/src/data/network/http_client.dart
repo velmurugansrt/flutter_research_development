@@ -19,24 +19,13 @@ class HTTPClient {
   Future<Map<String, dynamic>> postJSONRequest(
       {String url, Object data}) async {
     final String jsonRequest = json.encode(data);
-
     final String response = await postRequest(url: url, data: jsonRequest);
-
-    // if (response == null) {
-    //   throw ServiceException(
-    //     ERROR_INVALID_RESPONSE,
-    //     NETWORK_INVALID_RESPONSE,
-    //   );
-    // }
-
     return json.decode(response) as Map<String, dynamic>;
   }
 
   Future<String> postRequest({String url, String data}) async {
     print('HTTPClient Request> $url body> $data');
-
     final HttpClient client = HttpClient();
-
     try {
       client.connectionTimeout = _connectTimeout;
       final HttpClientRequest request = await client.postUrl(Uri.parse(url));
@@ -44,6 +33,31 @@ class HTTPClient {
       if (AppStore().getSessionCookie() != null)
         request.headers.set('Cookie', AppStore().getSessionCookie());
       request.write(data);
+      final HttpClientResponse response =
+          await request.close().timeout(_requestTimeout);
+      storeCookie(response.headers);
+      final String sResponse = await response.transform(utf8.decoder).join();
+      print('HTTPClient Response> $sResponse');
+      return sResponse;
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<Map<String, dynamic>> getJSONRequest({String url}) async {
+    final String response = await getRequest(url: url);
+    return json.decode(response) as Map<String, dynamic>;
+  }
+
+  Future<String> getRequest({String url}) async {
+    final HttpClient client = HttpClient();
+
+    try {
+      client.connectionTimeout = _connectTimeout;
+      final HttpClientRequest request = await client.getUrl(Uri.parse(url));
+      request.headers.set('Content-type', 'application/json');
+      if (AppStore().getSessionCookie() != null)
+        request.headers.set('Cookie', AppStore().getSessionCookie());
       final HttpClientResponse response =
           await request.close().timeout(_requestTimeout);
       storeCookie(response.headers);
