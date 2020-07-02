@@ -1,17 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_research_development/src/assets/styles/app_widget_size.dart';
 import 'package:flutter_research_development/src/assets/theme/app_colors.dart';
+import 'package:flutter_research_development/src/blocs/home/home_bloc.dart';
+import 'package:flutter_research_development/src/data/store/app_store.dart';
+import 'package:flutter_research_development/src/models/home/product_list_response_model.dart';
 import 'package:flutter_research_development/src/ui/navigation/screen_routes.dart';
 import 'package:upi_pay/upi_pay.dart';
 
 class HomeScreen extends StatefulWidget {
   HomeScreen({Key key}) : super(key: key);
-
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  HomeBloc _homeBloc;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _homeBloc = BlocProvider.of<HomeBloc>(context);
+      _homeBloc.add(FetchUserLoginEvent());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -22,9 +35,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   AppBar _buildAppBar() {
+    String username = AppStore().getUserDetails().username;
     return AppBar(
       automaticallyImplyLeading: false,
-      title: const Text('Home'),
+      title: Text(username),
     );
   }
 
@@ -210,96 +224,123 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _updateProductCart() {}
 
-  Row _buildBestProductList() {
-    return Row(
-      children: <Widget>[
-        _buildProductItem(),
-      ],
-    );
-  }
-
-  Wrap _buildProductItem({int type = 1}) {
-    final double gridSize = 140;
-    return Wrap(
-      direction: type == 1 ? Axis.vertical : Axis.horizontal,
-      crossAxisAlignment: WrapCrossAlignment.start,
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.only(top: 8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          width: gridSize,
-          height: gridSize,
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  '',
-                ),
-              ),
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                alignment: Alignment.bottomLeft,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).backgroundColor.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Most recommented product',
-                  style: Theme.of(context).accentTextTheme.bodyText2.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                ),
-              ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.shopping_cart,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  onPressed: null,
-                ),
-              )
-            ],
-          ),
-        ),
-        Wrap(
-          direction: Axis.vertical,
-          children: <Widget>[
-            Text(
-              'Product 1',
-              style: Theme.of(context).textTheme.headline4,
+  BlocBuilder<HomeBloc, HomeState> _buildBestProductList() {
+    return BlocBuilder<HomeBloc, HomeState>(
+      condition: (HomeState prevState, HomeState currentState) {
+        return currentState is ProductListState;
+      },
+      builder: (BuildContext context, HomeState state) {
+        if (state is ProductListState) {
+          final List<ProductList> productList = state.productList;
+          return SingleChildScrollView(
+            child: Row(
+              children: List.generate(productList.length,
+                  (index) => _buildProductItem(productList[index])),
             ),
-            Text(
-              '₹30.00',
-              style: Theme.of(context).textTheme.headline3,
-            )
-          ],
-        )
-      ],
+            scrollDirection: Axis.horizontal,
+          );
+        }
+        return Container();
+      },
     );
   }
 
-  GridView _buildPopularProductList() {
-    return GridView.count(
-      shrinkWrap: true,
-      scrollDirection: Axis.vertical,
-      crossAxisCount: 2,
-      children: <Widget>[
-        _buildProductItem(type: 2),
-        _buildProductItem(type: 2),
-      ],
+  Padding _buildProductItem(ProductList productItem, {int type = 1}) {
+    const double gridSize = 140;
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Wrap(
+        direction: type == 1 ? Axis.vertical : Axis.horizontal,
+        crossAxisAlignment: WrapCrossAlignment.start,
+        children: <Widget>[
+          Container(
+            margin: const EdgeInsets.only(top: 16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            width: gridSize,
+            height: gridSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    productItem.image,
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  alignment: Alignment.bottomLeft,
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).backgroundColor.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    productItem.decription,
+                    style: Theme.of(context).accentTextTheme.bodyText2.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.shopping_cart,
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: null,
+                  ),
+                )
+              ],
+            ),
+          ),
+          SizedBox(
+              width: gridSize,
+              child: Wrap(
+                direction: Axis.vertical,
+                children: <Widget>[
+                  Text(
+                    productItem.name,
+                    style: Theme.of(context).textTheme.bodyText2,
+                  ),
+                  Text(
+                    '₹ ${productItem.price}',
+                    style: Theme.of(context).textTheme.headline3,
+                  )
+                ],
+              ))
+        ],
+      ),
+    );
+  }
+
+  BlocBuilder<HomeBloc, HomeState> _buildPopularProductList() {
+    return BlocBuilder<HomeBloc, HomeState>(
+      condition: (HomeState prevState, HomeState currentState) {
+        return currentState is ProductListState;
+      },
+      builder: (BuildContext context, HomeState state) {
+        if (state is ProductListState) {
+          final List<ProductList> productList = state.productList;
+          return GridView.count(
+            shrinkWrap: true,
+            scrollDirection: Axis.vertical,
+            crossAxisCount: 2,
+            children: List.generate(productList.length,
+                (index) => _buildProductItem(productList[index], type: 2)),
+          );
+        }
+        return Container();
+      },
     );
   }
 }

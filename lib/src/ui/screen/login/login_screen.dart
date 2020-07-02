@@ -20,9 +20,18 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loginBloc = BlocProvider.of<LoginBloc>(context);
+      _loginBloc.listen(_loginBlocListener);
     });
 
     super.initState();
+  }
+
+  Future<void> _loginBlocListener(LoginState state) async {
+    if (state is LoginSuccessState) {
+      Navigator.of(context).pushReplacementNamed(ScreenRoutes.HOME_SCREEN);
+    } else if (state is LoginFailedState) {
+      showAlert('Invalid user credential');
+    }
   }
 
   @override
@@ -145,10 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } else if (password == '') {
       showAlert('Please enter valid password');
     } else {
-
-      _loginBloc.add(FetchUserLoginEvent());
-
-      // Navigator.of(context).pushReplacementNamed(ScreenRoutes.HOME_SCREEN);
+      _loginBloc.add(FetchUserLoginEvent(username, password));
     }
   }
 
