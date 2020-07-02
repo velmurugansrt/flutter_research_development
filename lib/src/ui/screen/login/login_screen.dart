@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_research_development/src/assets/styles/app_images.dart';
 import 'package:flutter_research_development/src/assets/styles/app_widget_size.dart';
+import 'package:flutter_research_development/src/ui/navigation/screen_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   LoginScreen({Key key}) : super(key: key);
@@ -115,13 +116,57 @@ class _LoginScreenState extends State<LoginScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: AppWidgetSize.buttonBorderRadius,
         ),
-        onPressed: () {},
+        onPressed: _loginButtonPressed,
         child: Text(
           'Login',
           style: Theme.of(context).textTheme.button,
           // style:  ,
         ),
       ),
+    );
+  }
+
+  void _loginButtonPressed() {
+    final String username = _usernameController.text.trim();
+    final String password = _passwordController.text.trim();
+    if (username == '') {
+      showAlert('Please enter valid username');
+    } else if (password == '') {
+      showAlert('Please enter valid password');
+    } else {
+      Navigator.of(context).pushReplacementNamed(ScreenRoutes.HOME_SCREEN);
+    }
+  }
+
+  void showAlert(String message) {
+    showDialog<AlertDialog>(
+      context: context,
+      barrierDismissible: false, // user must tap button for close dialog!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            'Shopping cart',
+            style: Theme.of(context).textTheme.headline5,
+          ),
+          content: Container(
+            child: Text(
+              message ?? '',
+              style: Theme.of(context).textTheme.headline3,
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(
+                'Okay',
+                style: Theme.of(context).textTheme.headline5,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            )
+          ],
+        );
+      },
     );
   }
 }

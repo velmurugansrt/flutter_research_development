@@ -6,6 +6,7 @@ import 'package:flutter_research_development/src/ui/navigation/screen_routes.dar
 import 'package:flutter_research_development/src/ui/screen/home/home_screen.dart';
 import 'package:flutter_research_development/src/ui/screen/init/int_screen.dart';
 import 'package:flutter_research_development/src/ui/screen/login/login_screen.dart';
+import 'package:flutter_research_development/src/ui/screen/order_status/order_status_screen.dart';
 
 class APP extends StatelessWidget {
   @override
@@ -64,6 +65,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
         settings: const RouteSettings(name: ScreenRoutes.HOME_SCREEN),
         builder: (BuildContext context) {
           return HomeScreen();
+        },
+      );
+      break;
+    case ScreenRoutes.ORDER_STATUS_SCREEN:
+      return MaterialPageRoute<dynamic>(
+        settings: const RouteSettings(name: ScreenRoutes.ORDER_STATUS_SCREEN),
+        builder: (BuildContext context) {
+          return OrderStatusScreen();
         },
       );
       break;

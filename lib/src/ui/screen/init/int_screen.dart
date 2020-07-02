@@ -8,25 +8,45 @@ class InitScreen extends StatefulWidget {
   _InitScreenState createState() => _InitScreenState();
 }
 
-class _InitScreenState extends State<InitScreen> {
+class _InitScreenState extends State<InitScreen>
+    with SingleTickerProviderStateMixin {
+  AnimationController controller;
+  Animation heartbeatAnimation;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) {
-        Navigator.of(context).pushNamed(ScreenRoutes.HOME_SCREEN);
-      },
-    );
+    controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 500));
+    heartbeatAnimation =
+        Tween<double>(begin: 100.0, end: 150.0).animate(controller);
+    controller.forward().whenComplete(() {
+      controller.reverse();
+      Navigator.of(context).pushReplacementNamed(ScreenRoutes.LOGIN_SCREEN);
+    });
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        child: Center(
-          child: Text('Init Screen'),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: heartbeatAnimation,
+      builder: (BuildContext context, Widget widget) {
+        return Scaffold(
+          body: Center(
+            child: Icon(
+              Icons.shopping_cart,
+              color: Theme.of(context).primaryColor,
+              size: heartbeatAnimation.value,
+            ),
+          ),
+        );
+      },
     );
   }
 }

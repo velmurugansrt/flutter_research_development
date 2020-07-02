@@ -143,5 +143,13 @@ ThemeData lightTheme() {
         color: APP_TEXT_COLOR,
       ),
     ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: APP_SCAFFOLD_BACKGROUND_COLOR,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(25.0),
+        ),
+      ),
+    ),
   );
 }
